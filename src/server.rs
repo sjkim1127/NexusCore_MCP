@@ -21,6 +21,7 @@ pub fn create_server() {
         Box::new(tools::malware::wrappers::external::CapaTool),
         Box::new(tools::malware::wrappers::external::FlossTool),
         Box::new(tools::malware::wrappers::external::ProcDumpTool),
+        Box::new(tools::malware::wrappers::external::DieTool),
     ];
 
     tracing::info!("Registered {} tools", tools.len());

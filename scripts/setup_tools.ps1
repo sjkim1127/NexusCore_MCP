@@ -16,6 +16,9 @@ $flossUrl = "https://github.com/mandiant/flare-floss/releases/latest/download/fl
 # 3. ProcDump (Sysinternals)
 $procdumpUrl = "https://download.sysinternals.com/files/Procdump.zip"
 
+# 4. Detect It Easy (DIE)
+$dieUrl = "https://github.com/horsicq/DIE-engine/releases/latest/download/die_win64_portable.zip" 
+
 Write-Host "Note: Accessing GitHub releases requires logic to resolve redirects or specific versions."
 Write-Host "Please implement dynamic download or manually place executables in PATH."
 Write-Host "For ProcDump:"
