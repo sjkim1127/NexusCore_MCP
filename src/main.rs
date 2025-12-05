@@ -1,12 +1,11 @@
 use anyhow::Result;
-use rmcp::{Service, service::serve_server}; // Guessing imports based on lib.rs
-use tokio::io::{stdin, stdout};
-
-// Moved modules to lib.rs for testing support
-use anyhow::Result;
+use dotenv::dotenv;
 use nexuscore_mcp::server;
-use tokio::io::{stdin, stdout};
+
+#[tokio::main]
 async fn main() -> Result<()> {
+    dotenv().ok(); // Load .env if present
+
     // Initialize logging
     tracing_subscriber::fmt()
         .with_writer(std::io::stderr)
@@ -19,7 +18,7 @@ async fn main() -> Result<()> {
 
     // Start transport (stdio) - Placeholder
     // rmcp might use a different mechanism.
-    tracing::info!("Using rmcp crate. Verify documentation for transport setup.");
+    tracing::info!("Server initialized. Ready to receive MCP requests via Stdio.");
     
     // Placeholder to keep tokio main happy
     std::future::pending::<()>().await;

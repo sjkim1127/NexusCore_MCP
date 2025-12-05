@@ -1,77 +1,62 @@
 # NexusCore MCP
 
-NexusCore MCP is a dynamic analysis Model Context Protocol (MCP) server built with **Rust**, leveraging **Frida** for powerful instrumentation and process manipulation.
+NexusCore MCP is a **Model Context Protocol (MCP)** server tailored for **advanced malware analysis** and **dynamic instrumentation**. It empowers AI agents to perform deep security analysis by providing a unified interface to powerful tools like Frida, Scylla, YARA, and CAPEv2.
 
-It is designed to be a highly modular and secure environment for analyzing binaries, detecting vulnerabilities, and inspecting runtime memory, tailored for security researchers and automated analysis pipelines.
+## 🚀 Features
 
-## Features
+### 🛡️ Malware Analysis Domain
+- **Execution Control**: `spawn_process` (Suspeneded spawn via Frida) for anti-debugging bypass.
+- **Unpacking**: `find_oep` (OEP detection using `iced-x86`), `pe_fixer` (PE header reconstruction).
+- **IAT Recovery**: `iat_fixer` (Import Address Table reconstruction via Scylla).
+- **Sandboxing**: `cape_submit` (Automated submission to CAPEv2 Sandbox).
+- **Static Analysis**: `yara_scan` (Memory/File scanning), `die_scan` (Compiler/Packer detection), `capa_scan` (Capability analysis).
 
-### 🔍 Dynamic Analysis
-- **Spawn & Attach**: Launch new processes in a suspended state or attach to running ones.
-- **Memory Inspection**: Read and search process memory (Boyer-Moore pattern matching).
-- **Instrumentation**: Inject JavaScript hooks via Frida to intercept function calls and modify behavior.
+### 🔧 Dynamic Instrumentation (Frida)
+- **Process Control**: Spawn, Attach, Resume.
+- **Memory**: Read/Write/Search process memory.
+- **Hooking**: Install dynamic hooks (JavaScript/C) into running processes.
 
-### 🛡️ Security Tools
-- **DefenderBot**: Automated security checker for common misconfigurations (ASLR, DEP, etc.).
-- **CodeQL Integration**: Trigger static analysis scans using CodeQL (requires CodeQL CLI).
+### 🌐 Network & System
+- **Traffic**: `network_capture` (Tshark integration).
+- **Events**: `etw_monitor` (Windows Event Tracing).
 
-## Architecture
-The server is built on a plugin-based architecture using Rust traits:
-- **Engine**: Core instrumentation logic powered by `frida-rs`.
-- **Tools**: Modular capabilities implementing the `Tool` trait.
-- **Protocol**: Compliant with the Model Context Protocol (MCP) for seamless integration with AI agents.
+## 📂 Architecture
 
-## Installation
+- `src/engine`: Core logic (Frida handler).
+- `src/tools`:
+  - `common`: Basic process/memory/network tools.
+  - `malware`: Specialized analysis tools (Unpacker, IAT, Sandbox, Yara).
+- `src/sandbox`: Integration with external sandboxes (CAPEv2).
+- `scripts/`: Helper scripts for environment setup.
 
-### Prerequisites
-- **Rust Toolchain**: [Install Rust](https://www.rust-lang.org/tools/install)
-- **Frida**: Ensure your environment supports Frida (usually handled by the crate, but LLVM/Clang might be required for binding generation).
+## 🛠️ Usage
 
-### Build
+### 1. Easy Setup (All-in-One)
+We provide a PowerShell script to automatically install all necessary dependencies (Sysinternals, DIE, Capa, Tshark, etc.) and configure the environment.
+
+Open PowerShell as **Administrator** and run:
+```powershell
+./scripts/setup_tools.ps1
+```
+
+### 2. Build & Run
 ```bash
-git clone https://github.com/sjkim1127/Nexuscore_MCP.git
-cd Nexuscore_MCP
-cargo build --release
+cargo run --release
 ```
 
-## Usage
+### 3. AI Integration
+Provide the `nexuscore_mcp.exe` path to your MCP-compatible AI agent configuration.
 
-Run the server directly (it uses stdio for MCP transport):
-```bash
-./target/release/nexuscore_mcp
-```
+## 📦 Tools List
 
-### Configuration in MCP Client
-Add the server to your MCP client configuration (e.g., `claude_desktop_config.json`):
-
-```json
-{
-  "mcpServers": {
-    "nexuscore": {
-      "command": "path/to/nexuscore_mcp.exe",
-      "args": []
-    }
-  }
-}
-```
-
-## Tools Available
-| Tool Name | Description |
-|-----------|-------------|
-| `spawn_process` | Spawns a target process in a suspended state. |
-| `attach_process` | Attaches to a running process by PID. |
-| `read_memory` | Reads raw bytes from a specific memory address. |
-| `search_memory` | Scans memory for specific byte patterns. |
-| `install_hook` | Injects a JavaScript hook into a function. |
-| `defender_bot` | Checks for security features and hardening. |
-| `codeql_scan` | Runs a CodeQL database creation and query. |
-
-## Contribution
-1. Fork the repository.
-2. Create a feature branch (`git checkout -b feature/amazing-tool`).
-3. Commit your changes (`git commit -m 'Add amazing tool'`).
-4. Push to the branch (`git push origin feature/amazing-tool`).
-5. Open a Pull Request.
+| Tool | Description |
+|------|-------------|
+| `spawn_process` | Spawns process in suspended state (Frida) |
+| `find_oep` | Analyzes entry point code to find OEP |
+| `iat_fixer` | Rebuilds Import Address Table |
+| `cape_submit` | Submits file to CAPEv2 sandbox |
+| `yara_scan` | Scans file or process memory with YARA |
+| `die_scan` | Detects compiler/packer signatures |
 
 ## License
 MIT License

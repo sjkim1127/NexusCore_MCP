@@ -1,28 +1,96 @@
-# Download External Tools Script
-$toolsDir = "C:\Tools"
-if (!(Test-Path $toolsDir)) { New-Item -ItemType Directory -Path $toolsDir }
+<#
+.SYNOPSIS
+    NexusCore MCP Analysis Environment Setup Script (All-in-One)
+    
+.DESCRIPTION
+    Automates the setup of a malware analysis environment on Windows.
+    1. Installs Chocolatey (Package Manager).
+    2. Installs base dependencies (Git, Python, 7zip, bandizip).
+    3. Downloads and configures specific analysis tools (DIE, Capa, Sysinternals).
+    4. Sets up PATH environment variables.
 
-Write-Host "Downloading Tools to $toolsDir..."
+.NOTES
+    Run as Administrator.
+#>
 
-# 1. Capa
-# URL needs to be latest release from github.com/mandiant/capa
-$capaUrl = "https://github.com/mandiant/capa/releases/latest/download/capa-v7.0.1-windows.zip" # Example version
-# (Real script would dynamically fetch latest tag)
+$ErrorActionPreference = "Stop"
+$toolsDir = Join-Path $PSScriptRoot "..\bin" # Target directory for tools
 
-# 2. FLOSS
-# URL from github.com/mandiant/flare-floss
-$flossUrl = "https://github.com/mandiant/flare-floss/releases/latest/download/floss-v2.3.0-windows.zip"
+# Ensure tools directory exists
+if (-not (Test-Path $toolsDir)) {
+    New-Item -ItemType Directory -Path $toolsDir | Out-Null
+    Write-Host "[+] Created tools directory: $toolsDir" -ForegroundColor Green
+}
 
-# 3. ProcDump (Sysinternals)
-$procdumpUrl = "https://download.sysinternals.com/files/Procdump.zip"
+# 1. Install Chocolatey
+if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+    Write-Host "[*] Installing Chocolatey..." -ForegroundColor Cyan
+    Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+}
+else {
+    Write-Host "[+] Chocolatey is already installed." -ForegroundColor Green
+}
 
-# 4. Detect It Easy (DIE)
-$dieUrl = "https://github.com/horsicq/DIE-engine/releases/latest/download/die_win64_portable.zip" 
+# 2. Install Base Utilities via Chocolatey
+Write-Host "[*] Installing base utilities..." -ForegroundColor Cyan
+choco install -y git python 7zip.install wireshark
 
-Write-Host "Note: Accessing GitHub releases requires logic to resolve redirects or specific versions."
-Write-Host "Please implement dynamic download or manually place executables in PATH."
-Write-Host "For ProcDump:"
-Invoke-WebRequest -Uri $procdumpUrl -OutFile "$toolsDir\procdump.zip"
-Expand-Archive "$toolsDir\procdump.zip" -DestinationPath $toolsDir -Force
+# 3. Download & Install Analysis Tools function
+function Install-AnalysisTool {
+    param (
+        [string]$Url,
+        [string]$ZipName,
+        [string]$DestName
+    )
+    $zipPath = Join-Path $toolsDir $ZipName
+    $extractPath = Join-Path $toolsDir $DestName
 
-Write-Host "Done. Ensure $toolsDir is in your PATH environment variable."
+    if (-not (Test-Path $extractPath)) {
+        Write-Host "[*] Downloading $DestName..." -ForegroundColor Yellow
+        Invoke-WebRequest -Uri $Url -OutFile $zipPath
+        
+        Write-Host "[*] Extracting $DestName..." -ForegroundColor Yellow
+        Expand-Archive -Path $zipPath -DestinationPath $extractPath -Force
+        Remove-Item $zipPath -Force
+        Write-Host "[+] Installed $DestName" -ForegroundColor Green
+    }
+    else {
+        Write-Host "[+] $DestName already exists." -ForegroundColor Green
+    }
+    return $extractPath
+}
+
+# --- Sysinternals ---
+Install-AnalysisTool "https://download.sysinternals.com/files/SysinternalsSuite.zip" "Sysinternals.zip" "Sysinternals"
+
+# --- Detect It Easy (DIE) ---
+# Direct link to v3.09 example
+$dieUrl = "https://github.com/horsicq/DIE-engine/releases/download/3.09/die_win64_portable_3.09.zip"
+Install-AnalysisTool $dieUrl "die.zip" "DetectItEasy"
+
+# --- Mandiant Capa ---
+$capaUrl = "https://github.com/mandiant/capa/releases/download/v7.0.1/capa-v7.0.1-windows.zip"
+Install-AnalysisTool $capaUrl "capa.zip" "Capa"
+
+# --- Mandiant Floss ---
+$flossUrl = "https://github.com/mandiant/flare-floss/releases/download/v3.0.1/floss-v3.0.1-windows.zip"
+Install-AnalysisTool $flossUrl "floss.zip" "Floss"
+
+# 4. Update PATH
+$envPath = [Environment]::GetEnvironmentVariable("Path", "Machine")
+$newPaths = @(
+    (Join-Path $toolsDir "Sysinternals"),
+    (Join-Path $toolsDir "DetectItEasy"),
+    (Join-Path $toolsDir "Capa"),
+    (Join-Path $toolsDir "Floss")
+)
+
+foreach ($p in $newPaths) {
+    if ($envPath -notlike "*$p*") {
+        Write-Host "[*] Adding to PATH: $p" -ForegroundColor Cyan
+        [Environment]::SetEnvironmentVariable("Path", "$envPath;$p", "Machine")
+    }
+}
+
+Write-Host "`n[SUCCESS] Environment Setup Complete!" -ForegroundColor Green
+Write-Host "Please restart your terminal to apply PATH changes."
