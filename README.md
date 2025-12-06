@@ -1,66 +1,75 @@
 # NexusCore MCP
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg) ![Platform](https://img.shields.io/badge/platform-Windows-blue)
+![License](https://img.shields.io/badge/license-MIT-blue.svg) ![Rust](https://img.shields.io/badge/rust-1.70%2B-orange.svg) ![Platform](https://img.shields.io/badge/platform-Windows-blue) ![RMCP](https://img.shields.io/badge/Built%20with-RMCP-green)
 
-**NexusCore MCP** is an advanced **Model Context Protocol (MCP)** server tailored for **AI-driven dynamic malware analysis**. It bridges the gap between Large Language Models (LLMs) and low-level system instrumentation, allowing AI agents to actively debug, inspect, and analyze malware in real-time.
+**NexusCore MCP** is an advanced **Model Context Protocol (MCP)** server specifically designed for **AI-driven dynamic malware analysis**. It bridges the gap between Large Language Models (LLMs) like Claude/GPT-4 and low-level system instrumentation, enabling AI agents to actively debug, inspect, and analyze evasive malware in real-time.
 
 > **Why NexusCore?**
-> Traditional sandboxes give you a report after the fact. NexusCore allows an AI to **interact** with the malware while it runs—bypassing anti-debugging checks using Frida, dumping memory, and reconstructing code on the fly.
+> Traditional sandboxes give you a static report. NexusCore allows an AI agent to **interactively** manipulate malware execution—bypassing anti-debugging checks (Themida/VMProtect) via Frida, dumping memory, and performing forensic triage on the fly.
 
 ---
 
 ## 🏗️ Architecture
 
-NexusCore acts as a middleware between your AI Agent (Claude, Cursor, etc.) and the Host OS.
-
 ```mermaid
 graph LR
-    A[AI Agent] -- MCP Protocol (JSON-RPC) --> B[NexusCore MCP]
-    B -- Spawn/Attach --> C[Frida Engine]
-    B -- API --> D[CAPEv2 Sandbox]
-    B -- CLI --> E[External Tools]
+    A[AI Agent (Claude/Cursor)] -- MCP Protocol (Stdio) --> B[NexusCore MCP]
     
-    subgraph Host OS
-    C -- Hooking --> F[Malware Process]
-    E -- Scan --> G[Artifacts]
+    subgraph NexusCore Engine
+        B -- Spawn/Hook --> C[Frida Engine]
+        B -- Scan --> D[System Forensics]
+        B -- API --> E[External Tools]
+    end
+    
+    subgraph Host OS (Windows VM)
+        C -- Inject --> F[Malware Process]
+        E -- CLI --> G[Static Analysis (Die, Capa)]
+        D -- Monitor --> H[Registry & Handles]
     end
 ```
 
 ---
 
-## 🚀 Features
+## 🚀 Features & Tools
 
-### 🛡️ Malware Analysis Domain (`src/tools/malware/`)
+### 🛡️ Dynamic Analysis & Evasion (`src/tools/malware/`)
 | Tool | Description | Key Tech |
 |------|-------------|----------|
-| **`spawn_process`** | Launches malware in a **suspended state** to bypass early anti-debugging checks. | **Frida** |
-| **`find_oep`** | Analyzes entry point instructions to detect unpacking loops and find OEP. | **Iced-x86** |
-| **`cape_submit`** | Automates submission of samples to a **CAPEv2 Sandbox** and retrieves reports. | **Reqwest** |
-| **`die_scan`** | Detects compilers, packers, and crypto signatures. | **Detect It Easy** |
-| **`yara_scan`** | Scans files (and future implementation: memory) against YARA rules. | **YARA-rs** |
-| **`pe_fixer`** | Parses PE headers and simulates OEP fixups for dumping. | **Goblin** |
+| **`spawn_process`** | Spawns malware in **suspended state** and injects **Stealth Unpacker** script to bypass Anti-Debug/VM checks. | **Frida** |
+| **`find_oep`** | Analyzes entry point instructions to detect unpacking loops and identify the Original Entry Point (OEP). | **Iced-x86** |
+| **`cape_submit`** | Automates submission of samples to a **CAPEv2 Sandbox** instance and retrieves full JSON reports. | **Reqwest** |
+| **`die_scan`** | Detects compilers, packers, and crypto signatures (e.g., "Themida 2.x"). | **Detect It Easy** |
+| **`yara_scan`** | Scans files using YARA rules for signature matching. | **YARA-rs** |
+| **`pe_fixer`** | Parses PE headers and simulates section alignment/entry point fixups. | **Goblin** |
+| **`iat_fixer`** | Rebuilds Import Address Table (IAT) from a dumped process. | **Scylla** |
 
-### � Core Instrumentation (`src/tools/common/`)
+### 🔍 System Forensics (`src/tools/system/`)
+| Tool | Description |
+|------|-------------|
+| **`scan_persistence`** | Scans Registry Run keys and Startup folders to detect auto-start mechanisms. |
+| **`scan_handles`** | Lists open handles and **Mutexes** (vital for IOC extraction) of a running process. |
+
+### 🔧 Core Instrumentation (`src/tools/common/`)
 | Tool | Description |
 |------|-------------|
 | **`attach_process`** | Attaches to an existing running process by PID. |
-| **`read_memory`** | Reads raw bytes from a target process memory address. |
-| **`install_hook`** | Injects custom JavaScript (Frida) to intercept API calls. |
+| **`resume_process`** | Resumes a suspended process. |
 
 ---
 
-## ⚡ Quick Start
+## ⚡ Quick Start (Zero-to-Hero)
 
-### 1. Unified Environment Setup (Windows)
-We provide an **All-in-One Powershell script** to install dependencies (Chocolatey, Python, Sysinternals, DIE, Capa, etc.).
+### 1. Unified Environment Setup
+We provide an **All-in-One Powershell script** that sets up a complete analysis environment on a clean Windows VM.
+It installs **Rust, Python, Build Tools, Chocolatey**, and downloads **Frida, Die, Capa, Sysinternals**.
 
 Run as **Administrator**:
 ```powershell
 ./scripts/setup_tools.ps1
 ```
 
-### 2. Configuration
-Create a `.env` file in the root directory (copy from `.env.example`):
+### 2. Configuration (`.env`)
+Create a `.env` file in the root directory:
 
 ```ini
 # .env
@@ -77,12 +86,9 @@ cargo build --release
 
 ---
 
-## 🤖 AI Integration Guide
+## 🤖 AI Integration Guide (Claude Desktop / Cursor)
 
-To use NexusCore with your AI assistant, add it to your MCP client configuration.
-
-### Claude Desktop / Cursor
-Add to your `claude_desktop_config.json`:
+Add the following to your MCP Client configuration (e.g., `claude_desktop_config.json`):
 
 ```json
 {
@@ -100,31 +106,25 @@ Add to your `claude_desktop_config.json`:
 
 ---
 
-## 🛠️ Developer Guide
+## � Analysis Scenario: "Cracking Themida"
 
-### Project Structure
-- **`src/engine`**: Core Frida handler logic (Process spawning, Session management).
-- **`src/tools`**: Plugin implementations.
-    - **`common`**: General purpose system tools.
-    - **`malware`**: Domain-specific security tools (Unpacker, Sandbox, etc.).
-- **`src/sandbox`**: External sandbox API clients (CAPEv2).
-
-### Running Tests
-We have a comprehensive test suite including mock servers and binary parsing validation.
-
-```bash
-# Run all tests
-cargo test
-
-# Run specific domain tests
-cargo test --test sandbox_tests
-cargo test --test reconstruction_tests
-```
+1.  **Initial Triage**:
+    *   Agent calls `die_scan` -> Result: "Themida / WinLicense 2.x".
+    *   Agent calls `cape_submit` -> Result: "Timeout / Crashed" (Sandbox evasion detected).
+2.  **Stealth Execution**:
+    *   Agent calls `spawn_process(path="malware.exe", stealth=true)`.
+    *   NexusCore spawns process bundled with `stealth_unpacker.js` to hook `IsDebuggerPresent` and `NtQueryInformationProcess`.
+3.  **Behavior Monitoring**:
+    *   Agent calls `scan_handles` to find Mutex `Global\GoGoMalware`.
+    *   Agent calls `scan_persistence` and finds `HKCU\..\Run\Updater`.
+4.  **dumping & Fixing**:
+    *   Agent identifies unpacked code region.
+    *   Agent calls `iat_fixer` to rebuild the binary.
 
 ---
 
 ## ⚠️ Disclaimer
-This tool is intended for **authorized security research and malware analysis** only. The authors are not responsible for any misuse or damage caused by this software. Always run malware in an isolated Virtual Machine.
+This tool is intended for **authorized security research and malware analysis** only. The authors and contributors are not responsible for any misuse or damage caused by this software. **Always run malware in an isolated Virtual Machine.**
 
 ## License
 MIT License
