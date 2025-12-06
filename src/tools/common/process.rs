@@ -2,7 +2,29 @@ use anyhow::Result;
 use serde_json::Value;
 use crate::tools::Tool;
 use async_trait::async_trait;
-use crate::engine::frida_handler::FridaHandler; // Use Handler struct, NOT module functions
+use crate::engine::frida_handler::FridaHandler;
+
+pub struct InjectFridaScript;
+
+#[async_trait]
+impl Tool for InjectFridaScript {
+    fn name(&self) -> &str { "inject_frida_script" }
+    fn description(&self) -> &str { "Injects a custom Frida script (JavaScript) into a running process. Args: pid (number), script (string)" }
+    
+    async fn execute(&self, args: Value) -> Result<Value> {
+        let pid = args["pid"].as_u64().ok_or(anyhow::anyhow!("Missing pid"))? as u32;
+        let script = args["script"].as_str().ok_or(anyhow::anyhow!("Missing script content"))?;
+        
+        let engine = FridaHandler::new();
+        engine.inject_script(pid, script).await?;
+        
+        Ok(serde_json::json!({ 
+            "status": "injected", 
+            "pid": pid,
+            "script_length": script.len()
+        }))
+    }
+}
 
 pub struct SpawnProcess;
 
@@ -15,16 +37,13 @@ impl Tool for SpawnProcess {
         let path = args["path"].as_str().ok_or(anyhow::anyhow!("Missing path"))?;
         let stealth = args["stealth"].as_bool().unwrap_or(true);
         
-        // Use the Engine's new capabilities
         let engine = FridaHandler::new();
         
         let mut script_content = String::new();
         if stealth {
-             // Load the stealth script from resources (Embedded in binary)
              script_content = include_str!("../../resources/scripts/stealth_unpacker.js").to_string();
         }
 
-        // Spawn -> Attach -> Load Script (if any) -> Resume
         let pid = engine.spawn_and_instrument(path, &script_content).await?;
         
         Ok(serde_json::json!({ 
@@ -44,12 +63,8 @@ impl Tool for AttachProcess {
     
     async fn execute(&self, args: Value) -> Result<Value> {
         let pid = args["pid"].as_u64().ok_or(anyhow::anyhow!("Missing pid"))? as u32;
-        
         let engine = FridaHandler::new();
-        // Since we are stateless, we just verify attach capabilities here.
-        // In a real agent workflow, the engine might maintain the session.
         let _session = engine.attach_process(pid).await?;
-        
         Ok(serde_json::json!({ "status": "attached", "pid": pid }))
     }
 }
@@ -63,10 +78,8 @@ impl Tool for ResumeProcess {
     
     async fn execute(&self, args: Value) -> Result<Value> {
         let pid = args["pid"].as_u64().ok_or(anyhow::anyhow!("Missing pid"))? as u32;
-        
         let engine = FridaHandler::new();
         engine.resume_process(pid).await?;
-        
         Ok(serde_json::json!({ "status": "resumed", "pid": pid }))
     }
 }

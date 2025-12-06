@@ -30,6 +30,7 @@ impl NexusCoreServer {
         register!(tools::common::process::SpawnProcess);
         register!(tools::common::process::AttachProcess);
         register!(tools::common::process::ResumeProcess);
+        register!(tools::common::process::InjectFridaScript); // New dynamic scripting tool
         // ... add other tools here ...
         register!(tools::malware::disasm::CodeDisassembler);
         register!(tools::malware::reconstruction::PeFixer);
