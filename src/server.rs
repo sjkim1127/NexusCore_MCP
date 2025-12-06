@@ -85,6 +85,12 @@ impl NexusCoreServer {
         register!(tools::malware::child_trapper::ChildTrapper);
         register!(tools::system::gui_spy::GuiSpy);
 
+        // --- Phase 5: Debugger Integration ---
+        register!(tools::malware::x64dbg::X64dbgLauncher);
+        register!(tools::malware::x64dbg::X64dbgScript);
+        register!(tools::malware::x64dbg::X64dbgCommands);
+        register!(tools::malware::x64dbg::X64dbgLogParser);
+
         Self { tools }
     }
 }

@@ -86,6 +86,11 @@ Install-AnalysisTool $flossUrl "floss.zip" "Floss"
 $pesieveUrl = "https://github.com/hasherezade/pe-sieve/releases/download/v0.3.9/pe-sieve64.zip"
 Install-AnalysisTool $pesieveUrl "pesieve.zip" "PE-Sieve"
 
+# --- x64dbg (Debugger) ---
+$x64dbgUrl = "https://github.com/x64dbg/x64dbg/releases/download/snapshot/snapshot_2024-03-13_12-07.zip"
+$x64dbgPath = Install-AnalysisTool $x64dbgUrl "x64dbg.zip" "x64dbg"
+Write-Host "[+] x64dbg installed. Use release\x64\x64dbg.exe for 64-bit debugging." -ForegroundColor Green
+
 # --- Sysmon (Windows Event Logging) ---
 Write-Host "[*] Checking Sysmon..." -ForegroundColor Cyan
 $sysmonExe = Join-Path $toolsDir "Sysinternals\Sysmon64.exe"
@@ -118,7 +123,8 @@ $newPaths = @(
     (Join-Path $toolsDir "DetectItEasy"),
     (Join-Path $toolsDir "Capa"),
     (Join-Path $toolsDir "Floss"),
-    (Join-Path $toolsDir "PE-Sieve")
+    (Join-Path $toolsDir "PE-Sieve"),
+    (Join-Path $toolsDir "x64dbg\release\x64")
 )
 
 foreach ($p in $newPaths) {
@@ -139,4 +145,5 @@ Write-Host "  - Detect It Easy (diec.exe)"
 Write-Host "  - Capa (capa.exe)"
 Write-Host "  - Floss (floss.exe)"
 Write-Host "  - PE-Sieve (pe-sieve64.exe)"
+Write-Host "  - x64dbg (x64dbg.exe, x32dbg.exe)"
 Write-Host "  - Sysmon (Event Logging)"
