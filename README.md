@@ -49,25 +49,48 @@ graph LR
 ### 🛡️ Dynamic Analysis & Evasion (`src/tools/malware/`)
 | Tool | Description | Key Tech |
 |------|-------------|----------|
-| **`spawn_process`** | Spawns malware in **suspended state** and injects **Stealth Unpacker** script to bypass Anti-Debug/VM checks. | **Frida** |
-| **`find_oep`** | Analyzes entry point instructions to detect unpacking loops and identify the Original Entry Point (OEP). | **Iced-x86** |
-| **`cape_submit`** | Automates submission of samples to a **CAPEv2 Sandbox** instance and retrieves full JSON reports. | **Reqwest** |
-| **`die_scan`** | Detects compilers, packers, and crypto signatures (e.g., "Themida 2.x"). | **Detect It Easy** |
-| **`yara_scan`** | Scans files using YARA rules for signature matching. | **YARA-rs** |
-| **`pe_fixer`** | Parses PE headers and simulates section alignment/entry point fixups. | **Goblin** |
-| **`iat_fixer`** | Rebuilds Import Address Table (IAT) from a dumped process. | **Scylla** |
+| **`spawn_process`** | Spawns malware in **suspended state** with **Stealth Unpacker** to bypass Anti-Debug. | **Frida** |
+| **`api_monitor`** | Monitors Windows API calls (file, registry, network, memory, process). | **Frida** |
+| **`trace_execution`** | Traces CPU instruction flow using Frida Stalker. | **Frida Stalker** |
+| **`warp_time`** | Bypasses Sleep/delay-based evasion by hooking time APIs. | **Frida** |
+| **`monitor_children`** | Detects child process creation (CreateProcess, ShellExecute). | **Frida** |
+| **`dump_ssl_keys`** | Hooks SSL libraries to dump session keys for HTTPS decryption. | **Frida** |
+| **`emulate_shellcode`** | Emulates shellcode using Unicorn Engine. | **Unicorn** |
+| **`config_extractor`** | Decodes obfuscated configs (XOR, Base64, RC4, AES). | **Native** |
+| **`die_scan`** | Detects compilers, packers, and crypto signatures. | **Detect It Easy** |
+| **`capa_scan`** | Identifies MITRE ATT&CK capabilities. | **CAPA** |
+| **`generate_yara`** | Auto-generates YARA rules from samples. | **Native** |
+| **`scan_pe_sieve`** | Detects process hollowing and DLL injection. | **PE-Sieve** |
 
-### 🔍 System Forensics (`src/tools/system/`)
+### 🔧 Session-Based Debugging (`src/tools/malware/debug/`)
 | Tool | Description |
 |------|-------------|
-| **`scan_persistence`** | Scans Registry Run keys and Startup folders to detect auto-start mechanisms. |
-| **`scan_handles`** | Lists open handles and **Mutexes** (vital for IOC extraction) of a running process. |
+| **`session_start`** | Start persistent cdb.exe debug session (headless). |
+| **`session_command`** | Send single command to active session. |
+| **`session_batch`** | Send multiple commands at once. |
+| **`session_end`** | Terminate debug session. |
+| **`debug_help`** | Common cdb.exe command reference. |
 
-### 🔧 Core Instrumentation (`src/tools/common/`)
+### � Frida Session Management (`src/tools/common/frida_session/`)
 | Tool | Description |
 |------|-------------|
-| **`attach_process`** | Attaches to an existing running process by PID. |
-| **`resume_process`** | Resumes a suspended process. |
+| **`frida_session_create`** | Create persistent Frida session (spawn/attach). |
+| **`frida_session_inject`** | Inject JS script into existing session. |
+| **`frida_session_messages`** | Get collected messages from hooks. |
+| **`frida_session_destroy`** | Release session resources. |
+
+### � System & Metrics
+| Tool | Description |
+|------|-------------|
+| **`scan_persistence`** | Scans Registry Run keys and Startup folders. |
+| **`inspect_gui`** | Extracts window titles and class names. |
+| **`get_metrics`** | Returns performance metrics (cache stats, timings). |
+
+### ⚡ Performance Optimizations
+- **SHA256 Caching**: Die/Capa/Floss results cached by file hash (1hr TTL)
+- **Batch Buffering**: Frida IPC batching for 10x less overhead
+- **Async I/O**: `spawn_blocking` for file operations
+- **Standardized JSON**: Unified response format with timing metadata
 
 ---
 
