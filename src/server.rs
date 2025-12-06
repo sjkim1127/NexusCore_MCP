@@ -112,11 +112,7 @@ impl RequestHandler for NexusCoreServer {
         let tools_list: Vec<McpToolDefinition> = self.tools.values().map(|t| McpToolDefinition {
             name: t.name().to_string(),
             description: Some(t.description().to_string()),
-            input_schema: serde_json::json!({
-                 "type": "object", 
-                 "properties": {}, // Schema generation is TODO, defaulting to generic object
-                 "additionalProperties": true 
-            }), 
+            input_schema: t.schema().to_json(), // Now uses actual tool schema
         }).collect();
 
         Ok(ListToolsResult { tools: tools_list, next_cursor: None })

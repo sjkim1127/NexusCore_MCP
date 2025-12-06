@@ -1,6 +1,6 @@
 use anyhow::Result;
 use serde_json::Value;
-use crate::tools::Tool;
+use crate::tools::{Tool, ToolSchema, ParamDef};
 use crate::engine::frida_handler::get_session_manager;
 use crate::utils::response::StandardResponse;
 use async_trait::async_trait;
@@ -13,6 +13,13 @@ pub struct FridaSessionCreate;
 impl Tool for FridaSessionCreate {
     fn name(&self) -> &str { "frida_session_create" }
     fn description(&self) -> &str { "Create a persistent Frida session. Args: pid (attach) OR path (spawn). Returns session_id." }
+
+    fn schema(&self) -> ToolSchema {
+        ToolSchema::new(vec![
+            ParamDef::new("pid", "number", false, "Process ID to attach to"),
+            ParamDef::new("path", "string", false, "Path to executable to spawn"),
+        ])
+    }
 
     async fn execute(&self, args: Value) -> Result<Value> {
         let start = Instant::now();
@@ -45,6 +52,13 @@ pub struct FridaSessionInject;
 impl Tool for FridaSessionInject {
     fn name(&self) -> &str { "frida_session_inject" }
     fn description(&self) -> &str { "Inject JS script into Frida session. Args: session_id, script (JS code)" }
+
+    fn schema(&self) -> ToolSchema {
+        ToolSchema::new(vec![
+            ParamDef::new("session_id", "string", true, "Frida session ID"),
+            ParamDef::new("script", "string", true, "JavaScript code to inject"),
+        ])
+    }
 
     async fn execute(&self, args: Value) -> Result<Value> {
         let start = Instant::now();
@@ -81,6 +95,12 @@ impl Tool for FridaSessionResume {
     fn name(&self) -> &str { "frida_session_resume" }
     fn description(&self) -> &str { "Resume a spawned process. Args: session_id" }
 
+    fn schema(&self) -> ToolSchema {
+        ToolSchema::new(vec![
+            ParamDef::new("session_id", "string", true, "Frida session ID"),
+        ])
+    }
+
     async fn execute(&self, args: Value) -> Result<Value> {
         let tool_name = self.name();
 
@@ -110,6 +130,12 @@ impl Tool for FridaSessionMessages {
     fn name(&self) -> &str { "frida_session_messages" }
     fn description(&self) -> &str { "Get collected messages from Frida session. Args: session_id" }
 
+    fn schema(&self) -> ToolSchema {
+        ToolSchema::new(vec![
+            ParamDef::new("session_id", "string", true, "Frida session ID"),
+        ])
+    }
+
     async fn execute(&self, args: Value) -> Result<Value> {
         let tool_name = self.name();
 
@@ -137,6 +163,12 @@ impl Tool for FridaSessionDestroy {
     fn name(&self) -> &str { "frida_session_destroy" }
     fn description(&self) -> &str { "Destroy a Frida session and release resources. Args: session_id" }
 
+    fn schema(&self) -> ToolSchema {
+        ToolSchema::new(vec![
+            ParamDef::new("session_id", "string", true, "Frida session ID"),
+        ])
+    }
+
     async fn execute(&self, args: Value) -> Result<Value> {
         let tool_name = self.name();
 
@@ -162,6 +194,10 @@ pub struct FridaSessionList;
 impl Tool for FridaSessionList {
     fn name(&self) -> &str { "frida_session_list" }
     fn description(&self) -> &str { "List all active Frida sessions" }
+
+    fn schema(&self) -> ToolSchema {
+        ToolSchema::empty() // No parameters required
+    }
 
     async fn execute(&self, _args: Value) -> Result<Value> {
         let tool_name = self.name();
