@@ -86,10 +86,18 @@ Install-AnalysisTool $flossUrl "floss.zip" "Floss"
 $pesieveUrl = "https://github.com/hasherezade/pe-sieve/releases/download/v0.3.9/pe-sieve64.zip"
 Install-AnalysisTool $pesieveUrl "pesieve.zip" "PE-Sieve"
 
-# --- x64dbg (Debugger) ---
-$x64dbgUrl = "https://github.com/x64dbg/x64dbg/releases/download/snapshot/snapshot_2024-03-13_12-07.zip"
-$x64dbgPath = Install-AnalysisTool $x64dbgUrl "x64dbg.zip" "x64dbg"
-Write-Host "[+] x64dbg installed. Use release\x64\x64dbg.exe for 64-bit debugging." -ForegroundColor Green
+# --- WinDbg / Debugging Tools for Windows (cdb.exe) ---
+# Note: cdb.exe comes with Windows SDK. Install via:
+Write-Host "[*] Checking for cdb.exe (WinDbg console debugger)..." -ForegroundColor Cyan
+$cdbPath = Get-Command cdb.exe -ErrorAction SilentlyContinue
+if (-not $cdbPath) {
+    Write-Host "[!] cdb.exe not found. Install Windows SDK with Debugging Tools:" -ForegroundColor Yellow
+    Write-Host "    winget install Microsoft.WindowsSDK" -ForegroundColor Yellow
+    Write-Host "    Or download from: https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/" -ForegroundColor Yellow
+}
+else {
+    Write-Host "[+] cdb.exe found: $($cdbPath.Source)" -ForegroundColor Green
+}
 
 # --- Sysmon (Windows Event Logging) ---
 Write-Host "[*] Checking Sysmon..." -ForegroundColor Cyan
@@ -123,8 +131,7 @@ $newPaths = @(
     (Join-Path $toolsDir "DetectItEasy"),
     (Join-Path $toolsDir "Capa"),
     (Join-Path $toolsDir "Floss"),
-    (Join-Path $toolsDir "PE-Sieve"),
-    (Join-Path $toolsDir "x64dbg\release\x64")
+    (Join-Path $toolsDir "PE-Sieve")
 )
 
 foreach ($p in $newPaths) {
@@ -145,5 +152,5 @@ Write-Host "  - Detect It Easy (diec.exe)"
 Write-Host "  - Capa (capa.exe)"
 Write-Host "  - Floss (floss.exe)"
 Write-Host "  - PE-Sieve (pe-sieve64.exe)"
-Write-Host "  - x64dbg (x64dbg.exe, x32dbg.exe)"
+Write-Host "  - cdb.exe (WinDbg console debugger - requires Windows SDK)"
 Write-Host "  - Sysmon (Event Logging)"
