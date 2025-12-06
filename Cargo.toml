@@ -8,26 +8,27 @@ tokio = { version = "1.0", features = ["full"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 anyhow = "1.0"
-# frida = "3.0" # Version might need adjustment based on available crates, starting with typical
-frida = { version = "0.17.0", features = [] }
-rmcp = { git = "https://github.com/modelcontextprotocol/rust-sdk" }
 async-trait = "0.1"
+reqwest = { version = "0.11", features = ["json", "multipart"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
-pcap-file = "2.0.0"
+dotenv = "0.15.0"
+winreg = "0.10"
+
 # Security & Analysis
-yara = { version = "0.26", features = ["bundled"] } # Use bundled to avoid external lib dependency issues
+yara = { version = "0.26", features = ["bundled"] } 
 frida = "0.17.0"
 capstone = "0.11"
 iced-x86 = "1.21.0"
 goblin = "0.10.4"
 hex = "0.4.3"
-reqwest = { version = "0.12.24", features = ["json", "multipart"] }
-dotenv = "0.15.0"
+
+# Others (Cleanup needed if unused)
+pcap-file = "2.0.0" 
 hudsucker = "0.24.0"
 ring = "0.17.14"
 futures = "0.3.31"
 
 [dev-dependencies]
-codecov = "0.4.1"
-mockito = "1.7.1"
+Mockito = "1.1.0" # Lowercase name might be mockito, checking standard usage.
+# mockito = "1.4" is preferred if not using old one.
