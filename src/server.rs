@@ -85,12 +85,12 @@ impl NexusCoreServer {
         register!(tools::malware::child_trapper::ChildTrapper);
         register!(tools::system::gui_spy::GuiSpy);
 
-        // --- Phase 5: Debugger Integration (Headless cdb.exe) ---
-        register!(tools::malware::debugger::CdbDebugger);
-        register!(tools::malware::debugger::CdbAttach);
-        register!(tools::malware::debugger::CdbMemoryDump);
-        register!(tools::malware::debugger::CdbDisassemble);
-        register!(tools::malware::debugger::CdbRegisters);
+        // --- Phase 5: Debugger Integration (Session-Based, Headless cdb.exe) ---
+        register!(tools::malware::debugger::SessionStart);
+        register!(tools::malware::debugger::SessionCommand);
+        register!(tools::malware::debugger::SessionBatch);
+        register!(tools::malware::debugger::SessionEnd);
+        register!(tools::malware::debugger::SessionList);
         register!(tools::malware::debugger::CdbCommands);
 
         Self { tools }
