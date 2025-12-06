@@ -56,6 +56,11 @@ impl NexusCoreServer {
         register!(tools::malware::frida::callstack::CallstackTracer);
         register!(tools::malware::frida::callstack::AddressTracer);
         
+        // --- Auto-Deobfuscation (Signature Feature) ---
+        register!(tools::malware::frida::auto_deobfuscate::AutoDeobfuscator);
+        register!(tools::malware::frida::auto_deobfuscate::DynamicApiCapture);
+        register!(tools::malware::frida::auto_deobfuscate::StringBirthTracker);
+        
         // --- Analysis Tools (malware::analysis) ---
         register!(tools::malware::analysis::disasm::CodeDisassembler);
         register!(tools::malware::analysis::reconstruction::PeFixer);
