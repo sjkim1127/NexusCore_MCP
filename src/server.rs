@@ -31,6 +31,15 @@ impl NexusCoreServer {
         register!(tools::common::process::AttachProcess);
         register!(tools::common::process::ResumeProcess);
         register!(tools::common::process::InjectFridaScript); // New dynamic scripting tool
+        
+        // --- Frida Session Management (Persistent Sessions) ---
+        register!(tools::common::frida_session::FridaSessionCreate);
+        register!(tools::common::frida_session::FridaSessionInject);
+        register!(tools::common::frida_session::FridaSessionResume);
+        register!(tools::common::frida_session::FridaSessionMessages);
+        register!(tools::common::frida_session::FridaSessionDestroy);
+        register!(tools::common::frida_session::FridaSessionList);
+        
         // ... add other tools here ...
         register!(tools::malware::disasm::CodeDisassembler);
         register!(tools::malware::reconstruction::PeFixer);
