@@ -51,27 +51,6 @@ impl StandardResponse {
             timestamp: current_timestamp(),
             data,
             metadata: ResponseMetadata::default(),
-            error: None,
-        };
-        serde_json::to_value(response).unwrap_or_else(|_| serde_json::json!({"error": "serialization failed"}))
-    }
-
-    /// Create a success response with timing
-    pub fn success_timed(tool: &str, data: Value, start: Instant) -> Value {
-        let duration = start.elapsed().as_millis() as u64;
-        let response = Self {
-            tool: tool.to_string(),
-            status: ResponseStatus::Success,
-            timestamp: current_timestamp(),
-            data,
-            metadata: ResponseMetadata {
-                duration_ms: duration,
-                cached: None,
-                version: "1.0".to_string(),
-            },
-            error: None,
-        };
-        serde_json::to_value(response).unwrap_or_else(|_| serde_json::json!({"error": "serialization failed"}))
     }
 
     /// Create a success response with cache info
