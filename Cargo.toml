@@ -16,7 +16,7 @@ dotenv = "0.15.0"
 winreg = "0.10"
 
 # Security & Analysis
-yara = { version = "0.26", features = ["bundled"] } 
+yara = { version = "0.26", features = ["bundled-4_5_0"] } 
 frida = "0.17.0"
 capstone = "0.11"
 iced-x86 = "1.21.0"
@@ -32,5 +32,5 @@ rmcp = { version = "0.10.0", features = ["server"] }
 schemars = "1.1.0"
 
 [dev-dependencies]
-Mockito = "1.1.0" # Lowercase name might be mockito, checking standard usage.
+mockito = "1.1.0"
 # mockito = "1.4" is preferred if not using old one.
