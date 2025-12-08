@@ -13,7 +13,7 @@ reqwest = { version = "0.11", features = ["json", "multipart"] }
 tracing = "0.1"
 tracing-subscriber = "0.3"
 dotenv = "0.15.0"
-winreg = "0.10"
+winreg = "0.50"
 
 # Security & Analysis
 yara = { version = "0.26", features = ["bundled-4_5_0"] } 
